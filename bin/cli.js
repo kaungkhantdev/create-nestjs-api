@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { execSync } = require('child_process');
+const { execSync, spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
@@ -14,10 +14,34 @@ const colors = {
   cyan: '\x1b[36m',
   yellow: '\x1b[33m',
   red: '\x1b[31m',
+  dim: '\x1b[2m',
 };
 
 function log(message, color = 'reset') {
   console.log(`${colors[color]}${message}${colors.reset}`);
+}
+
+// Spinner
+function createSpinner(text) {
+  const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+  let i = 0;
+  let interval;
+
+  return {
+    start() {
+      process.stdout.write('\x1B[?25l'); // Hide cursor
+      interval = setInterval(() => {
+        process.stdout.write(`\r${colors.cyan}${frames[i]} ${text}${colors.reset}`);
+        i = (i + 1) % frames.length;
+      }, 80);
+    },
+    stop(success = true, finalText) {
+      clearInterval(interval);
+      process.stdout.write('\x1B[?25h'); // Show cursor
+      const icon = success ? `${colors.green}✔` : `${colors.red}✖`;
+      console.log(`\r${icon} ${finalText || text}${colors.reset}`);
+    },
+  };
 }
 
 function showHelp() {
@@ -59,17 +83,41 @@ if (fs.existsSync(targetPath)) {
   process.exit(1);
 }
 
+async function runCommand(command, args) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, { 
+      stdio: 'pipe',
+      shell: true 
+    });
+    
+    let output = '';
+    child.stdout.on('data', (data) => output += data);
+    child.stderr.on('data', (data) => output += data);
+    
+    child.on('close', (code) => {
+      if (code === 0) resolve(output);
+      else reject(new Error(output));
+    });
+  });
+}
+
 async function main() {
   try {
-    log(`\n🚀 Creating NestJS API project: ${projectName}\n`, 'cyan');
+    console.log();
+    log(`🚀 Creating NestJS API project: ${projectName}\n`, 'cyan');
 
-    // Clone template using degit
-    log('📦 Downloading template...', 'yellow');
-    execSync(`npx degit kaungkhantdev/nestjs-api-starter ${projectName}`, {
-      stdio: 'inherit',
-    });
+    // Download template with spinner
+    const downloadSpinner = createSpinner('Downloading template...');
+    downloadSpinner.start();
+    
+    await runCommand('npx', ['degit', 'kaungkhantdev/nestjs-api-starter', projectName]);
+    
+    downloadSpinner.stop(true, `Template downloaded successfully`);
 
-    // Update package.json with new project name
+    // Update package.json with spinner
+    const configSpinner = createSpinner('Configuring project...');
+    configSpinner.start();
+
     const pkgPath = path.join(targetPath, 'package.json');
     if (fs.existsSync(pkgPath)) {
       const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
@@ -77,25 +125,29 @@ async function main() {
       pkg.version = '0.0.1';
       pkg.description = '';
       pkg.author = '';
-      pkg.repository = undefined;
+      delete pkg.repository;
       fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
     }
 
-    log('\n✅ Project created successfully!\n', 'green');
+    configSpinner.stop(true, 'Project configured');
+
+    // Success message
+    console.log();
+    log('✅ Project created successfully!\n', 'green');
     log('Next steps:', 'cyan');
     console.log(`
-  cd ${projectName}
-  npm install
+  ${colors.dim}$${colors.reset} cd ${projectName}
+  ${colors.dim}$${colors.reset} npm install
   
-  # Setup environment
-  cp .env.example .env
+  ${colors.dim}# Setup environment${colors.reset}
+  ${colors.dim}$${colors.reset} cp .env.example .env
   
-  # Run database migrations
-  npm run prisma:migrate:dev
+  ${colors.dim}# Run database migrations${colors.reset}
+  ${colors.dim}$${colors.reset} npm run prisma:migrate:dev
   
-  # Start development server
-  npm run start:dev
-    `);
+  ${colors.dim}# Start development server${colors.reset}
+  ${colors.dim}$${colors.reset} npm run start:dev
+`);
 
   } catch (error) {
     log(`\nError: ${error.message}`, 'red');
