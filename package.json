@@ -1,0 +1,32 @@
+{
+  "name": "create-nestjs-api",
+  "version": "1.0.0",
+  "description": "CLI to scaffold NestJS API starter with Prisma, JWT auth, and Swagger",
+  "author": "Kaung Khant Zaw <kaungkhant.dev@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kaungkhantdev/create-nestjs-api.git"
+  },
+  "keywords": [
+    "cli",
+    "nestjs",
+    "starter",
+    "prisma",
+    "api",
+    "jwt",
+    "scaffold"
+  ],
+  "bin": {
+    "create-nestjs-api": "./bin/cli.js"
+  },
+  "files": [
+    "bin"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
