@@ -4,7 +4,7 @@ CLI to scaffold a NestJS API starter with Prisma, JWT authentication, and Swagge
 
 ## Usage
 ```bash
-npx create-nestjs-api my-app
+npx @kaungkhantdev/create-nestjs-api my-app
 ```
 
 ## What's Included
