@@ -20,7 +20,7 @@ npx @kaungkhantdev/create-nestjs-api my-app
 ## Quick Start
 ```bash
 # Create new project
-npx create-nestjs-api my-app
+npx @kaungkhantdev/create-nestjs-api my-app
 
 # Navigate to project
 cd my-app
