@@ -136,18 +136,31 @@ async function main() {
     log('✅ Project created successfully!\n', 'green');
     log('Next steps:', 'cyan');
     console.log(`
-  ${colors.dim}$${colors.reset} cd ${projectName}
-  ${colors.dim}$${colors.reset} npm install
-  
-  ${colors.dim}# Setup environment${colors.reset}
-  ${colors.dim}$${colors.reset} cp .env.example .env
-  
-  ${colors.dim}# Run database migrations${colors.reset}
-  ${colors.dim}$${colors.reset} npm run prisma:migrate:dev
-  
-  ${colors.dim}# Start development server${colors.reset}
-  ${colors.dim}$${colors.reset} npm run start:dev
-`);
+      ${colors.dim}# Navigate to project${colors.reset}
+      ${colors.dim}$${colors.reset} cd ${projectName}
+
+      ${colors.dim}# Install dependencies${colors.reset}
+      ${colors.dim}$${colors.reset} npm install
+
+      ${colors.dim}# Setup environment${colors.reset}
+      ${colors.dim}$${colors.reset} cp .env.example .env
+      ${colors.dim}# Edit .env with your database credentials and JWT secret${colors.reset}
+
+      ${colors.dim}# Run Prisma migrations${colors.reset}
+      ${colors.dim}$${colors.reset} npm run prisma:migrate:deploy
+
+      ${colors.dim}# Generate Prisma client${colors.reset}
+      ${colors.dim}$${colors.reset} npm run prisma:generate
+
+      ${colors.dim}# Start dev server${colors.reset}
+      ${colors.dim}$${colors.reset} npm run start:dev
+    `);
+
+    log('The API will be available at:', 'cyan');
+    console.log(`
+      ${colors.green}Application:${colors.reset}             http://localhost:3000
+      ${colors.green}Swagger Documentation:${colors.reset}   http://localhost:3000/api
+    `);
 
   } catch (error) {
     log(`\nError: ${error.message}`, 'red');
