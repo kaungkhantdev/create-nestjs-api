@@ -30,13 +30,21 @@ npm install
 
 # Setup environment
 cp .env.example .env
+# Edit .env with your database credentials and JWT secret
 
-# Run migrations
-npm run prisma:migrate:dev
+# Run Prisma migrations
+npm run prisma:migrate:deploy
+
+# Generate Prisma client
+npm run prisma:generate
 
 # Start dev server
 npm run start:dev
 ```
+
+The API will be available at:
+- Application: `http://localhost:3000`
+- Swagger Documentation: `http://localhost:3000/api`
 
 ## Links
 
