@@ -1,6 +1,6 @@
 {
   "name": "@kaungkhantdev/create-nestjs-api",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "CLI to scaffold NestJS API starter with Prisma, JWT auth, and Swagger",
   "author": "Kaung Khant Zaw <kaungkhant.dev@gmail.com>",
   "license": "MIT",
