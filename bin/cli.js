@@ -83,17 +83,23 @@ if (fs.existsSync(targetPath)) {
   process.exit(1);
 }
 
-async function runCommand(command, args) {
+async function runCommand(command, args, options = {}) {
   return new Promise((resolve, reject) => {
-    const child = spawn(command, args, { 
+    const child = spawn(command, args, {
       stdio: 'pipe',
-      shell: true 
+      shell: true
     });
-    
+
     let output = '';
-    child.stdout.on('data', (data) => output += data);
-    child.stderr.on('data', (data) => output += data);
-    
+    child.stdout.on('data', (data) => {
+      output += data;
+      if (options.onData) options.onData(data.toString());
+    });
+    child.stderr.on('data', (data) => {
+      output += data;
+      if (options.onData) options.onData(data.toString());
+    });
+
     child.on('close', (code) => {
       if (code === 0) resolve(output);
       else reject(new Error(output));
@@ -101,18 +107,54 @@ async function runCommand(command, args) {
   });
 }
 
+function createProgressBar(text) {
+  let currentPercent = 0;
+
+  return {
+    start() {
+      process.stdout.write('\x1B[?25l'); // Hide cursor
+      this.update(0);
+    },
+    update(percent) {
+      currentPercent = Math.min(100, Math.max(0, percent));
+      const barLength = 20;
+      const filled = Math.round((currentPercent / 100) * barLength);
+      const empty = barLength - filled;
+      const bar = '▸'.repeat(filled) + '▹'.repeat(empty);
+      process.stdout.write(`\r${colors.cyan}${bar}${colors.reset} ${currentPercent}% ${text} ☕`);
+    },
+    stop(success = true, finalText) {
+      process.stdout.write('\x1B[?25h'); // Show cursor
+      const icon = success ? `${colors.green}✔` : `${colors.red}✖`;
+      console.log(`\r${icon} ${finalText || text}${' '.repeat(50)}`);
+    },
+  };
+}
+
 async function main() {
   try {
     console.log();
     log(`🚀 Creating NestJS API project: ${projectName}\n`, 'cyan');
 
-    // Download template with spinner
-    const downloadSpinner = createSpinner('Downloading template...');
-    downloadSpinner.start();
-    
+    // Download template with progress bar
+    const progressBar = createProgressBar('Downloading template...');
+    progressBar.start();
+
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+      if (progress < 90) {
+        progress += Math.random() * 15;
+        progressBar.update(Math.floor(progress));
+      }
+    }, 200);
+
     await runCommand('npx', ['degit', 'kaungkhantdev/nestjs-api-starter', projectName]);
-    
-    downloadSpinner.stop(true, `Template downloaded successfully`);
+
+    clearInterval(progressInterval);
+    progressBar.update(100);
+    setTimeout(() => {
+      progressBar.stop(true, 'Template downloaded successfully');
+    }, 300);
 
     // Update package.json with spinner
     const configSpinner = createSpinner('Configuring project...');
